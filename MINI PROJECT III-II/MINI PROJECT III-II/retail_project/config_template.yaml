@@ -1,0 +1,318 @@
+# Spark Pipeline Configuration Template
+# Customize these settings for your deployment environment
+# Usage: Copy this file to config.yaml and modify as needed
+
+# ============================================================
+# SPARK SESSION CONFIGURATION
+# ============================================================
+spark:
+  # Application name (for tracking in Spark UI)
+  app_name: "TimeSeries_Analytics_Production"
+  
+  # Cluster master URL
+  # Options:
+  #   - local[*]                    (all cores on local machine)
+  #   - local[8]                    (8 cores on local machine)
+  #   - spark://master-ip:7077      (Standalone cluster)
+  #   - yarn                        (YARN cluster)
+  #   - k8s://https://master:6443   (Kubernetes)
+  master: "local[*]"
+
+# ============================================================
+# MEMORY & RESOURCE CONFIGURATION
+# ============================================================
+resources:
+  # Driver memory (process running your application)
+  driver_memory: "4g"
+  
+  # Executor memory (worker nodes processing data)
+  executor_memory: "8g"
+  
+  # Number of executor cores per worker
+  executor_cores: "4"
+  
+  # Maximum total cores (driver + executors)
+  cores_max: "32"
+  
+  # Number of executor instances (YARN/Kubernetes only)
+  executor_instances: "10"
+
+# ============================================================
+# PERFORMANCE TUNING
+# ============================================================
+performance:
+  # Number of partitions for shuffle operations
+  # Higher = more parallelism but more overhead
+  # Rule: 2-3 partitions per core
+  shuffle_partitions: "200"
+  
+  # Serialization format
+  # Options: default, org.apache.spark.serializer.KryoSerializer
+  serializer: "org.apache.spark.serializer.KryoSerializer"
+  
+  # Max buffer size for Kryo serialization (MB)
+  kryo_buffer_max: "512"
+  
+  # Compress RDD in memory
+  rdd_compress: true
+  
+  # Enable adaptive query execution (auto-optimize)
+  adaptive_enabled: true
+  
+  # Coalesce partitions automatically
+  adaptive_coalesce: true
+  
+  # Enable skew join optimization
+  adaptive_skew_join: true
+
+# ============================================================
+# NETWORK CONFIGURATION
+# ============================================================
+network:
+  # Network timeout (seconds)
+  timeout: "600"
+  
+  # Executor heartbeat interval (seconds)
+  heartbeat_interval: "60"
+  
+  # Maximum frame size for network transfers (MB)
+  max_frame_size: "256"
+
+# ============================================================
+# STORAGE CONFIGURATION
+# ============================================================
+storage:
+  # Event logging for Spark history
+  event_log_enabled: true
+  event_log_dir: "/var/log/spark"
+  
+  # Shuffle service
+  shuffle_enabled: true
+  
+  # Compress broadcast variables
+  broadcast_compress: true
+
+# ============================================================
+# DATA INGESTION CONFIGURATION
+# ============================================================
+data:
+  # Input data file path
+  input_path: "./data/data.csv"
+  
+  # CSV reading options
+  csv:
+    header: true
+    inferSchema: true
+    delimiter: ","
+    encoding: "UTF-8"
+  
+  # Output cache format
+  cache_format: "memory"  # Options: memory, disk, memory_and_disk
+
+# ============================================================
+# MACHINE LEARNING CONFIGURATION
+# ============================================================
+ml:
+  # Test/Train split ratio
+  test_ratio: 0.2
+  
+  # Seed for reproducibility
+  random_seed: 42
+  
+  # Linear Regression Parameters
+  linear_regression:
+    # L2 regularization parameter
+    reg_param: 0.01
+    
+    # Elastic Net mixing parameter (0=Ridge, 1=Lasso)
+    elastic_net_param: 0.5
+    
+    # Maximum iterations for training
+    max_iterations: 100
+    
+    # Convergence tolerance
+    tol: 1e-6
+    
+    # Whether to fit intercept
+    fit_intercept: true
+  
+  # Feature scaling
+  feature_scaling: true
+  
+  # Feature scaling type
+  scaler_type: "StandardScaler"  # Options: MinMaxScaler, StandardScaler
+
+# ============================================================
+# FEATURE ENGINEERING CONFIGURATION
+# ============================================================
+features:
+  # Temporal features to extract
+  temporal_features:
+    - "year"
+    - "month"
+    - "day"
+    - "hour"
+    - "dayofweek"
+  
+  # Lag features (number of previous values)
+  lag_windows: [1, 2, 3]
+  
+  # Rolling window aggregations
+  # Options: mean, sum, min, max, std
+  rolling_windows:
+    - window: 7
+      aggregations: ["mean", "sum"]
+    - window: 30
+      aggregations: ["mean"]
+  
+  # Categorical encoding
+  categorical_features:
+    - "store_id"
+    - "product_id"
+  
+  # One-hot encoding
+  one_hot_encode: true
+  
+  # Handle missing values
+  handle_nulls: true
+  null_strategy: "drop"  # Options: drop, forward_fill, backward_fill, mean
+
+# ============================================================
+# FORECASTING CONFIGURATION
+# ============================================================
+forecasting:
+  # Number of steps to forecast
+  forecast_steps: 5
+  
+  # Forecast method
+  # Options: linear_regression, arima, lstm, exponential_smoothing
+  method: "linear_regression"
+  
+  # ARIMA parameters (if using ARIMA)
+  arima:
+    order: [1, 1, 1]  # (p, d, q)
+    seasonal_order: [0, 0, 0, 0]  # (P, D, Q, s)
+  
+  # Confidence interval for predictions
+  confidence_level: 0.95
+
+# ============================================================
+# ANOMALY DETECTION CONFIGURATION
+# ============================================================
+anomaly_detection:
+  # Detection method
+  # Options: zscore, isolation_forest, mad, mad_robust
+  method: "zscore"
+  
+  # Z-score threshold
+  zscore_threshold: 2.0
+  
+  # For Isolation Forest
+  contamination: 0.05  # Expected proportion of anomalies (0-1)
+  
+  # For MAD (Median Absolute Deviation)
+  mad_threshold: 2.5
+  
+  # Apply to which column
+  target_column: "sales"
+
+# ============================================================
+# API CONFIGURATION
+# ============================================================
+api:
+  # FastAPI server settings
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+  workers: 4
+  
+  # CORS settings
+  cors_enabled: true
+  cors_origins: ["*"]
+  
+  # Request timeout (seconds)
+  request_timeout: 60
+
+# ============================================================
+# LOGGING CONFIGURATION
+# ============================================================
+logging:
+  # Log level
+  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # Log file path
+  file_path: "./logs/spark_app.log"
+  
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Max file size (MB)
+  max_size: 100
+  
+  # Number of backup files
+  backup_count: 5
+
+# ============================================================
+# DATABASE CONFIGURATION (Optional)
+# ============================================================
+database:
+  # Enable database storage for metrics
+  enabled: false
+  
+  # Database type
+  # Options: sqlite, postgresql, mysql
+  type: "postgresql"
+  
+  # Connection string
+  url: "postgresql://user:password@localhost:5432/timeseries_db"
+  
+  # Table for metrics
+  metrics_table: "model_metrics"
+  
+  # Table for predictions
+  predictions_table: "predictions"
+
+# ============================================================
+# DEPLOYMENT CONFIGURATION
+# ============================================================
+deployment:
+  # Environment
+  # Options: development, staging, production
+  environment: "development"
+  
+  # Enable monitoring
+  monitoring_enabled: true
+  
+  # Monitoring backend
+  # Options: prometheus, datadog, cloudwatch
+  monitoring_backend: "prometheus"
+  
+  # Enable caching
+  caching_enabled: false
+  
+  # Cache backend
+  # Options: redis, memcached, local
+  cache_backend: "redis"
+
+# ============================================================
+# END OF CONFIGURATION
+# ============================================================
+# 
+# HOW TO USE:
+# 1. Save this template as config.yaml
+# 2. Modify values for your environment
+# 3. In Python code:
+#
+#    import yaml
+#    with open('config.yaml') as f:
+#        config = yaml.safe_load(f)
+#    
+#    spark = SparkSession.builder \
+#        .appName(config['spark']['app_name']) \
+#        .master(config['spark']['master']) \
+#        .config("spark.driver.memory", config['resources']['driver_memory']) \
+#        ... (repeat for all config items)
+#        .getOrCreate()
+#
+# ============================================================
